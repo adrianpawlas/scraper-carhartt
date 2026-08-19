@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+scraper/logs/
+logs/
+failed_products.log
+*.log
+.DS_Store

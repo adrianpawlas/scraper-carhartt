@@ -1,0 +1,77 @@
+name: scrape-carhatt
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Limit number of products (leave empty for all)'
+        required: false
+        type: number
+      skip_embeddings:
+        description: 'Skip embedding generation (faster, metadata only)'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: "45 4 * * 0,4"  # Sun & Thu 04:45 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scrape-carhatt
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      DEVICE: cpu
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Cache HuggingFace model
+        uses: actions/cache@v4
+        id: hf-cache
+        with:
+          path: ~/.cache/huggingface
+          key: hf-siglip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          SCRAPE_LIMIT: ${{ inputs.limit }}
+        run: |
+          ARGS=""
+          if [ -n "$SCRAPE_LIMIT" ] && [ "$SCRAPE_LIMIT" != "0" ]; then
+            ARGS="$ARGS --limit $SCRAPE_LIMIT"
+          fi
+          if [ "${{ inputs.skip_embeddings }}" = "true" ]; then
+            ARGS="$ARGS --no-embed"
+          fi
+          python main.py $ARGS
+
+      - name: Upload failed products log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-products
+          path: failed_products.log
+          if-no-files-found: ignore
+          retention-days: 30

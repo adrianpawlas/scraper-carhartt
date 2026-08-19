@@ -1,0 +1,11 @@
+httpx>=0.27.0
+beautifulsoup4>=4.12.0
+Pillow>=10.0.0
+numpy>=1.26.0
+python-dotenv>=1.0.0
+
+# Embeddings (local SigLIP via transformers/torch — model is free on the HF Hub)
+torch>=2.0.0
+transformers>=4.40.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
