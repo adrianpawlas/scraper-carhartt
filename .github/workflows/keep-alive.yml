@@ -4,11 +4,15 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 permissions:
-  contents: read
-  actions: write
+  contents: write
 jobs:
   keepalive:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Create keepalive commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "Keepalive: prevent scheduled workflow suspension"
+          git push
