@@ -22,7 +22,7 @@ def _get(name: str, default: str = "") -> str:
 @dataclass(frozen=True)
 class Config:
     # --- Brand / source identity ---
-    brand: str = "Carhartt"
+    brand: str = "Carhart WIP"
     source: str = "scraper-carhatt"
 
     # --- Store ---

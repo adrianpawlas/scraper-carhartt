@@ -135,7 +135,7 @@ class SupabaseClient:
         cols = await self.fetch_columns()
         for i in range(0, len(rows), BATCH_SIZE):
             chunk = rows[i : i + BATCH_SIZE]
-            chunk = [{k: v for k, v in row.items() if k in cols} for row in chunk]
+            chunk = [{k: row.get(k) for k in cols} for row in chunk]
             headers = {
                 **self.headers,
                 "Prefer": "resolution=merge-duplicates,return=minimal",
